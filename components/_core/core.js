@@ -1,8 +1,14 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useMemo } from 'react';
 import { View, StyleSheet, Animated, Easing } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
-export const Core = () => {
+export const withBone = (Comp) => ({
+	boneSize = { width: '100%', height: '100%' },
+	...props
+}) => {
+	const { width, height } = boneSize;
+
+	const Bone = useMemo(() => Comp || View, []);
 	const translateX = useRef(new Animated.Value(-300)).current;
 
 	useEffect(() => {
@@ -26,23 +32,24 @@ export const Core = () => {
 	}, []);
 
 	return (
-		<View style={styles.container}>
-			<Animated.View
+		<Comp style={styles.container}>
+			<Bone
 				style={{
 					transform: [
 						{
 							translateX,
 						},
 					],
-				}}>
+				}}
+				{...props}>
 				<LinearGradient
 					style={{ width: 300, height: 300 }}
 					colors={['#eee', '#fff', '#eee']}
 					start={[0, 0]}
 					end={[1, 0]}
 				/>
-			</Animated.View>
-		</View>
+			</Bone>
+		</Comp>
 	);
 };
 
@@ -52,5 +59,6 @@ const styles = StyleSheet.create({
 		height: 300,
 		overflow: 'hidden',
 		backgroundColor: '#eee',
+		borderRadius: 10,
 	},
 });
