@@ -1,27 +1,43 @@
-import React, { useEffect, useRef, useMemo } from 'react';
+import React, {
+	useEffect,
+	useRef,
+	useMemo,
+	useCallback,
+	useState,
+} from 'react';
 import { View, StyleSheet, Animated, Easing } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { BONE_COLOR, DURATION, HIGHLIGHT_COLOR } from '../constants';
 
 export const withBone = (Comp) => ({
-	boneSize = { width: '100%', height: '100%' },
+	boneSize,
+	boneColor = BONE_COLOR,
+	highlightColor = HIGHLIGHT_COLOR,
+	duration = DURATION,
+	style,
 	...props
 }) => {
-	const { width, height } = boneSize;
+	const [layout, setLayout] = useState({});
+	const onLayout = useCallback(({ nativeEvent }) => {
+		const { width, height } = nativeEvent.layout;
+		setLayout({ width, height });
+	}, []);
 
 	const Bone = useMemo(() => Comp || View, []);
-	const translateX = useRef(new Animated.Value(-300)).current;
+	const translateX = useRef(new Animated.Value(0)).current;
 
 	useEffect(() => {
 		const animateBones = () => {
+			const { width } = layout;
 			Animated.sequence([
 				Animated.timing(translateX, {
-					toValue: 300,
-					duration: 1000,
+					toValue: width,
+					duration: duration,
 					easing: Easing.in,
 					useNativeDriver: true,
 				}),
 				Animated.timing(translateX, {
-					toValue: -300,
+					toValue: -width,
 					duration: 0,
 					easing: Easing.in,
 					useNativeDriver: true,
@@ -29,10 +45,15 @@ export const withBone = (Comp) => ({
 			]).start((e) => e.finished && animateBones());
 		};
 		animateBones();
-	}, []);
+	}, [layout]);
 
 	return (
-		<Comp style={styles.container}>
+		<Comp
+			onLayout={onLayout}
+			style={[
+				styles.container,
+				{ backgroundColor: boneColor, height: style.height ? '100%' : 'auto' },
+			]}>
 			<Bone
 				style={{
 					transform: [
@@ -43,8 +64,8 @@ export const withBone = (Comp) => ({
 				}}
 				{...props}>
 				<LinearGradient
-					style={{ width: 300, height: 300 }}
-					colors={['#eee', '#fff', '#eee']}
+					style={{ width: layout.width, height: layout.height }}
+					colors={[boneColor, highlightColor, boneColor]}
 					start={[0, 0]}
 					end={[1, 0]}
 				/>
@@ -55,10 +76,7 @@ export const withBone = (Comp) => ({
 
 const styles = StyleSheet.create({
 	container: {
-		width: 300,
-		height: 300,
+		width: '100%',
 		overflow: 'hidden',
-		backgroundColor: '#eee',
-		borderRadius: 10,
 	},
 });

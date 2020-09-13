@@ -1,11 +1,13 @@
 import React from 'react';
 import { View } from './components';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Text } from 'react-native';
 
 export default function App() {
 	return (
 		<View style={styles.container}>
-			<View loading />
+			<View loading style={styles.view}>
+				<Text>Test</Text>
+			</View>
 		</View>
 	);
 }
@@ -13,8 +15,12 @@ export default function App() {
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
-		backgroundColor: '#fff',
 		alignItems: 'center',
 		justifyContent: 'center',
+	},
+	view: {
+		backgroundColor: 'blue',
+		width: '60%',
+		height: 20,
 	},
 });
